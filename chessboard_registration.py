@@ -2,10 +2,10 @@ import cv2
 import numpy as np
 
 chessboard_top = cv2.imread("chessboard_top.jpg")
-
-# cv2.imshow("szachownica", chessboard_top)
-# cv2.waitKey(0)  # Czekaj na dowolny klawisz
-# cv2.destroyAllWindows()  # Zamknij okno
+chessboard_top = cv2.resize(chessboard_top, (600, 600))  
+cv2.imshow("szachownica", chessboard_top)
+cv2.waitKey(0)  # Czekaj na dowolny klawisz
+cv2.destroyAllWindows()  # Zamknij okno
 
 chessboard_top_g = cv2.cvtColor(chessboard_top, cv2.COLOR_BGR2GRAY)
 
@@ -19,7 +19,7 @@ cv2.imshow("krawedzie", edges)
 cv2.waitKey(0)  # Czekaj na dowolny klawisz
 cv2.destroyAllWindows()  # Zamknij okno
 
-lines = cv2.HoughLines(edges,1, np.pi/180, 140)
+lines = cv2.HoughLines(edges,1, np.pi/180, 170)
 
 for r_theta in lines:
     arr = np.array(r_theta[0], dtype=np.float64)
