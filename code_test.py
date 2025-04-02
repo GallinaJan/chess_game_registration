@@ -15,51 +15,67 @@ import numpy as np
 # mean_hsv = np.mean(roi_hsv, axis=(0,1))
 
 # print("Średnia wartość HSV:", mean_hsv)
-def nothing(x):
-    pass
+
+
+#manual finder for mask parametrer
+def find_mask_parameters(img):
+    print("test")
+    def nothing(x):
+        pass
+
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    # Color-segmentation to get binary mask
+
+    # Utwórz okno i suwaki
+    cv2.namedWindow("Trackbars")
+    cv2.createTrackbar("L-H", "Trackbars", 0, 179, nothing)
+    cv2.createTrackbar("L-S", "Trackbars", 0, 255, nothing)
+    cv2.createTrackbar("L-V", "Trackbars", 0, 255, nothing)
+    cv2.createTrackbar("U-H", "Trackbars", 179, 179, nothing)
+    cv2.createTrackbar("U-S", "Trackbars", 255, 255, nothing)
+    cv2.createTrackbar("U-V", "Trackbars", 255, 255, nothing)
+
+    while True:
+        # Pobierz wartości z suwaków
+        l_h = cv2.getTrackbarPos("L-H", "Trackbars")
+        l_s = cv2.getTrackbarPos("L-S", "Trackbars")
+        l_v = cv2.getTrackbarPos("L-V", "Trackbars")
+        u_h = cv2.getTrackbarPos("U-H", "Trackbars")
+        u_s = cv2.getTrackbarPos("U-S", "Trackbars")
+        u_v = cv2.getTrackbarPos("U-V", "Trackbars")
+
+
+        #chessboard_top_result
+        # lwr = np.array([0, 0, 0]) #best result for 0 0 0
+        # upr = np.array([179, 255, 76]) #best result for 179 255 76
+        #chessboard_empty_top resized to (600,600)
+        # lwr = np.array([0, 43, 0]) #best result for 0, 43, 0
+        # upr = np.array([29, 116, 123]) #best result for 29, 116, 123
+
+        # Utwórz maskę
+        lwr = np.array([l_h, l_s, l_v]) #best result for 0 0 0
+        upr = np.array([u_h, u_s, u_v]) #best result for 179 255 76
+        mask = cv2.inRange(hsv, lwr, upr)
+
+        # Pokaż maskę
+        cv2.imshow("Maska", mask)
+        
+        # Przerwij pętlę po naciśnięciu klawisza "q"
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    cv2.destroyAllWindows()
+    #oputput from manual searching of lwr and upr
+    # lwr = np.array([0, 0, 0]) #best result for 0 0 0
+    # upr = np.array([179, 255, 76]) #best result for 179 255 76
+    msk = cv2.inRange(hsv, lwr, upr)
+    return msk
 
 # Wczytaj obraz
-img = cv2.imread("chessboard_top.jpg")
-hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+img = cv2.imread("chessboard_empty_top.jfif")
+img = cv2.resize(img, (600, 600))  
 
-# # Color-segmentation to get binary mask
-
-# # Utwórz okno i suwaki
-# cv2.namedWindow("Trackbars")
-# cv2.createTrackbar("L-H", "Trackbars", 0, 179, nothing)
-# cv2.createTrackbar("L-S", "Trackbars", 0, 255, nothing)
-# cv2.createTrackbar("L-V", "Trackbars", 0, 255, nothing)
-# cv2.createTrackbar("U-H", "Trackbars", 179, 179, nothing)
-# cv2.createTrackbar("U-S", "Trackbars", 255, 255, nothing)
-# cv2.createTrackbar("U-V", "Trackbars", 255, 255, nothing)
-
-# while True:
-#     # Pobierz wartości z suwaków
-#     l_h = cv2.getTrackbarPos("L-H", "Trackbars")
-#     l_s = cv2.getTrackbarPos("L-S", "Trackbars")
-#     l_v = cv2.getTrackbarPos("L-V", "Trackbars")
-#     u_h = cv2.getTrackbarPos("U-H", "Trackbars")
-#     u_s = cv2.getTrackbarPos("U-S", "Trackbars")
-#     u_v = cv2.getTrackbarPos("U-V", "Trackbars")
-
-#     # Utwórz maskę
-#     lwr = np.array([l_h, l_s, l_v]) #best result for 0 0 0
-#     upr = np.array([u_h, u_s, u_v]) #best result for 179 255 76
-#     mask = cv2.inRange(hsv, lwr, upr)
-
-#     # Pokaż maskę
-#     cv2.imshow("Maska", mask)
-    
-#     # Przerwij pętlę po naciśnięciu klawisza "q"
-#     if cv2.waitKey(1) & 0xFF == ord('q'):
-#         break
-# cv2.destroyAllWindows()
-#oputput from manual searching of lwr and upr
-lwr = np.array([0, 0, 0]) #best result for 0 0 0
-upr = np.array([179, 255, 76]) #best result for 179 255 76
-
-
-msk = cv2.inRange(hsv, lwr, upr)
+msk = find_mask_parameters(img)
 
 # Extract chess-board
 krn = cv2.getStructuringElement(cv2.MORPH_RECT, (50, 30))
