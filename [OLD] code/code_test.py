@@ -3,19 +3,18 @@ import numpy as np
 
 
 # # Wczytaj obraz
-# img = cv2.imread("chessboard_top.jpg")
-# hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+img = cv2.imread("chessboard_top.jpg")
+hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 # # Zaznacz fragment do analizy
-# roi = cv2.selectROI("Select Region", img, False)
-# cv2.destroyAllWindows()
+roi = cv2.selectROI("Select Region", img, False)
+cv2.destroyAllWindows()
 
 # # Pobierz wartości HSV z wybranego obszaru
-# roi_hsv = hsv[int(roi[1]):int(roi[1]+roi[3]), int(roi[0]):int(roi[0]+roi[2])]
-# mean_hsv = np.mean(roi_hsv, axis=(0,1))
+roi_hsv = hsv[int(roi[1]):int(roi[1]+roi[3]), int(roi[0]):int(roi[0]+roi[2])]
+mean_hsv = np.mean(roi_hsv, axis=(0,1))
 
-# print("Średnia wartość HSV:", mean_hsv)
-
+print("Średnia wartość HSV:", mean_hsv)
 
 #manual finder for mask parametrer
 def find_mask_parameters(img):
