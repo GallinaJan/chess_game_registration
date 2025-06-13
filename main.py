@@ -1,8 +1,30 @@
 import cv2
+import os
 import numpy as np
 import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow import keras
+from keras.preprocessing import image_dataset_from_directory
+from tensorflow.image import convert_image_dtype
+from tensorflow.data.experimental import AUTOTUNE
+from keras.models import load_model
+
+folder_path = './test_1/test'
+
+# convert from unit8 to float32
+def convert_to_float(image, label):
+  image = convert_image_dtype(image, dtype=tf.float32)
+  return image, label
 
 # global variables
+model = load_model('./model_cnn_keras.keras')
+
+figure_names = ["CG", "CK", "CS", "CP", "CH", "CW", "XX", "BG", "BK", "BS", "BP", "BH", "BW"]
+
+#figure_names = ["CG", ]
+
+chessboard = [["XX" for _ in range(8)] for _ in range(8)]
+
 persp_change_coords = []
 
 def click_event(event, x, y, flags, params):
@@ -16,7 +38,6 @@ if __name__ == "__main__":
     lines_intersection_pattern = np.zeros((3, 3, 3), dtype=np.uint8)
     lines_intersection_pattern[:, :, 2] = np.array([[0, 255, 0], [255, 255, 255], [0, 255, 0]], dtype=np.uint8)
     intersection_dist = 10
-    first_iter = True
 
     # variables
     tiles_found = False
@@ -130,26 +151,48 @@ if __name__ == "__main__":
                 y_first, x_first = intersection_coords[8-i-1, j]
                 _, x_last= intersection_coords[8-i-1, j+1]
                 y_last, _ = intersection_coords[8-i, j]
-                tile = np.array(top_view[y_first:y_last+1, x_first:x_last, :], dtype=np.uint8)
+                tile = np.array(top_view[y_first:y_last, x_first:x_last, :], dtype=np.uint8)
                 tiles_view.append(tile)
 
         tiles = {names:views for (names, views) in zip(tiles_names, tiles_view)} 
 
         # viewing
-        if first_iter:
-            keys = iter(tiles)
-            tile_name = next(keys)
-            first_iter = False
-        cv2.imshow("View", tiles[tile_name])
+        cv2.imshow("View", top_view)
         key = cv2.waitKey(1)  # wait for the key ('Esc')
+        if key == 97:
+            tile_order = iter(tiles)
+            for i in range(8*8):
+                for filename in os.listdir(folder_path):
+                    file_path = os.path.join(folder_path, filename)
+                    try:
+                        if os.path.isfile(file_path) or os.path.islink(file_path):
+                            os.remove(file_path)
+                    except Exception as e:
+                        print(f'Błąd przy usuwaniu {file_path}: {e}')
+                tile_name = next(tile_order)
+                cv2.imwrite("./test_1/test/odczyt.jpg", tiles[tile_name])
+                test_images = image_dataset_from_directory(
+                    directory='./test_1',
+                    image_size=[224, 224], # resizing the images to the given shape
+                    interpolation='nearest', # the interpolation type while resizing
+                    batch_size=1, # the number of images loaded at the same time
+                    shuffle=False
+                )
+                test_images = (
+                    test_images
+                    .map(convert_to_float) # mapping
+                    .cache() # use cache to speed up iterations
+                    .prefetch(buffer_size=AUTOTUNE) # prefetch the new batch while the earlier one is still being processed
+                )
+                tile_predicts = model.predict(test_images)
+                figure_idxes = np.argmax(tile_predicts, axis=1)
+                for figure_idx in figure_idxes:
+                    chessboard[7-i//8][i%8] = figure_names[figure_idx]
+            for i in range(8):
+                print(chessboard[i])
+                print("\n")
         if key == 27:
             break
-        elif key == 97: # 'a'
-            cv2.imwrite("./dataset/test/black_knight/black_knight_"+tile_name+".jpg", tiles[tile_name])
-            if tile_name == "h8":
-                break
-            else:
-                tile_name = next(keys)
 
     # cleaning
     cap.release()
