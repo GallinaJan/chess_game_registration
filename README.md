@@ -3,6 +3,8 @@
 3. While doing chessboard recognition, you have to remove all the chess pieces from the board.
 4. After the chessboard recognition (before chess pieces detection), you have to cast a shadow on the chessboard in order to properly identify figures.
 5. CNN was teached with a GPU.
+6. There were different possibilities to solve chess piece detection problem. The first one was to look at the chessboard from above and take pictures of real pieces, but due to problems stated in (2.) the solution was abandoned. There was also the way to change the viewpoint for the camera, but I think that it would cause other difficulties, such as one piece covering up the other figure. We remained with 'view from above' approach, but we changed to 2D chess pieces.
+7. Light conditions are critical in this project.
 
 SOURCE:
 - TheAILerner (https://theailearner.com/tag/cv2-getperspectivetransform/, https://theailearner.com/tag/cv2-warpperspective/) - perspective change - 2D homography (method and functions)
